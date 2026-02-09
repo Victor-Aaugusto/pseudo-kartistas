@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pseudo Kartistas</title>
+    <link rel="stylesheet" href="style.css">
+   <script src="index.js" defer></script> 
+</head>
+<body>
+    <h1>Campeonato de Pseudo Kartistas</h1>
+    <hr>
+
+    <button  id="adicionaPilotoContainer">Adicionar Piloto</button>
+    <button  id="adicionaCorridaSectionbT">Adicionar Corrida</button>
+
+    <form class="adicionarDados" id="adicionarPilotoSection">
+        <label for="nome">Nome: </label>
+        <input type="text" id="nome" name="nome">
+
+        <button type="button" id="adcPiloto">Cadastrar Piloto</button>
+    </form>
+
+    <form class="adicionarDados" id="adicionarCorridaSection">
+        <label for="nomePista">Nome Pista: </label>
+        <input type="text" id="nomePista" name="nomePista">
+
+        <label for="duracaoCorrida">Duração corrida: </label>
+        <input type="number" id="duracaoCorrida" name="duracaoCorrida">
+
+        <div>
+        <label for="posicao1">posicao 1: </label>
+        <input type="text" id="posicao1" name="posicao1" class="posicao">
+
+        <label for="posicao2">posicao 2: </label>
+        <input type="text" id="posicao2" name="posicao2"  class="posicao">
+
+        <label for="posicao3">posicao 3: </label>
+        <input type="text" id="posicao3" name="posicao3"  class="posicao">
+
+        <label for="posicao4">posicao 4: </label>
+        <input type="text" id="posicao4" name="posicao4"  class="posicao">
+        </div>
+
+        <button type="button" id="adcCorrida">Cadastrar Corrida</button>
+    </form>
+
+    <section id="tabela">
+        <table id="rankTabela">
+            <thead>
+                <tr>
+                <th>Posição</th>
+                <th>Numero</th>
+                <th>Nome</th>
+                <th>Corridas</th>
+                <th>Pontos</th>
+                </tr>
+            </thead>
+        </table>
+    </section>
+</body>
+</html>
