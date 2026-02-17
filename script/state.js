@@ -1,5 +1,17 @@
-const stateGlobalCampeonato = {
-    idCorrida: 0,
+export function criaEstado (){
+    // PONTOS PREDEFINIDOS
+    const pontos = Object.freeze 
+    ({
+    1: 10,
+    2: 8,
+    3: 6,
+    4: 4 
+    })
+
+    //ESTADO DO CAMPEONATO
+    
+    const state = {
+    idCorrida: 1,
     numerosPilotos: [],
     pilotos: {
         8: { nome: 'max', numero: 8, corridas: 0, pontos: 0 },
@@ -11,12 +23,11 @@ const stateGlobalCampeonato = {
         6: { nome: 'Bryan',numero: 6,  corridas: 0, pontos: 0 },
         7: { nome: 'alcides', numero: 7, corridas: 0, pontos: 0 }
     },
-    corridas: {},
+    corridas: {}
 }
 
-let novoPiloto = "victor"
-let numero = 66
+    return {state, pontos}
+}
 
-stateGlobalCampeonato.pilotos[numero] = {nome: novoPiloto, numero: numero, corridas: 0, pontos: 0}
 
-console.log(stateGlobalCampeonato.pilotos)
+export default criaEstado
