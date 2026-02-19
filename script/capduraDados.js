@@ -12,20 +12,43 @@ function capturaDadosCorridas (){
 
 // VALIDA DADOS
 
+function validaString (pilotos){
+    const strVazia = pilotos.every(p => p !== '' && p !== 0)
+
+    if(!strVazia){
+        throw new Error ("Informe o nome do piloto!")
+    } else {
+        return true
+    }
+}
+
+function pilotoExiste (campeonato, pilotos){
+    const numPilotos = Object.keys(campeonato)
+    let existe = pilotos.every(piloto => numPilotos.includes(String(piloto)))
+
+    if(existe){
+        return existe
+    } else {
+       throw new Error ('Numero de piloto inválido')
+    }
+}
+
+function repitido (pilotos){
+    const pilotoRepetido = new Set(pilotos)   
+
+    if(pilotoRepetido.size === pilotos.length){
+        return true   
+   } else {
+       throw new Error ('Informado numero de pilotos repitidos!') 
+   }
+}
+
 function validaDados(campeonato, pilotosPosicao){
-    const numPilotos = Object.keys(campeonato.getPilotos())
+    validaString(pilotosPosicao)
+    pilotoExiste(campeonato, pilotosPosicao)
+    repitido(pilotosPosicao)
 
-    const strVazia = pilotosPosicao.every(p => p !== '' && p !== 0)
-    
-    const existe = pilotosPosicao.every(piloto => numPilotos.includes(String(piloto)))
-
-    const pilotoRepetido = new Set(pilotosPosicao)   
-
-    return (
-        strVazia &&
-            existe &&
-             pilotoRepetido.size === pilotosPosicao.length
-    )
+    return true
 }
 
 export {capturaDadosCorridas, limparCampos, validaDados}

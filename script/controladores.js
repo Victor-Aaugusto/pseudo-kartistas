@@ -1,41 +1,41 @@
 import { capturaDadosCorridas, validaDados } from "./capduraDados.js"
-import { listarTabela, limparCampos } from "./view.js"
-import criarCampeonato from './criarCampenato.js'
+import { listarTabela, limparCampos, mensagemReturn } from "./view.js"
 
-export const criarCamp = criarCampeonato()
-window.criarCamp = criarCamp
+// import campeonato from '../index.js'
+
 // CONTROLADORES
 
-export function adicionarCorridaControle(){
-     const sectionAdicionaCorrida = document.getElementById('adicionarCorridaSection')
-
+export function adicionarCorridaControle(campeonato){
      const dados = capturaDadosCorridas()
 
-    if(!validaDados(criarCamp, dados.posicoes)){
-        alert('Dados inválidos!')
-        return
-    }
 
-     const corrida = criarCamp.criarCorrdia(dados)
+    try{
+        validaDados(campeonato.getPilotos(), dados.posicoes)
+        const corrida = campeonato.criarCorrdia(dados)
 
-    const confirma = confirm(`Deseja adicionar os pilotos nas posições:
-        1-${criarCamp.getPilotos()[dados.posicoes[0]].nome}
-        2-${criarCamp.getPilotos()[dados.posicoes[1]].nome}
-        3-${criarCamp.getPilotos()[dados.posicoes[2]].nome}
-        4-${criarCamp.getPilotos()[dados.posicoes[3]].nome}
+        const confirma = confirm(`Deseja adicionar os pilotos nas posições:
+        1-${campeonato.getPilotos()[dados.posicoes[0]].nome}
+        2-${campeonato.getPilotos()[dados.posicoes[1]].nome}
+        3-${campeonato.getPilotos()[dados.posicoes[2]].nome}
+        4-${campeonato.getPilotos()[dados.posicoes[3]].nome}
         `
     )
 
     if(confirma){
-        criarCamp.cadastrarCorrida(corrida)
-        listarTabela(criarCamp.getPilotos())
-        sectionAdicionaCorrida.classList.remove('adicionarDados-active')
+        mensagemReturn('Corrida cadastrada com sucesso!')
+        campeonato.cadastrarCorrida(corrida)
+        listarTabela(campeonato.getPilotos())
+        setTimeout(() => limparCampos(), 2000)
+        
     }
 
-    limparCampos()
+    }
+    catch (error) {
+        mensagemReturn(error.message)
+    }
 }
 
-export function adicionarPilotoControle (){
+export function adicionarPilotoControle (campeonato){
     const sectionPilotoReset = document.getElementById('adicionarPilotoSection')
         const nomePiloto = document.getElementById('nome').value.trim()
 
@@ -43,8 +43,8 @@ export function adicionarPilotoControle (){
             const confirma = confirm(`Cadastrar o piloto ${nomePiloto}`) 
 
             if(confirma){
-                criarCamp.cadastrarPiloto(nomePiloto)
-                listarTabela(criarCamp.getPilotos())
+                campeonato.cadastrarPiloto(nomePiloto)
+                listarTabela(campeonato.getPilotos())
                 limparCampos()
                 sectionPilotoReset.classList.remove('adicionarDados-active')
             }
@@ -53,4 +53,4 @@ export function adicionarPilotoControle (){
         }   
 }     
 
-export default {adicionarCorridaControle, adicionarPilotoControle, criarCamp}
+export default {adicionarCorridaControle, adicionarPilotoControle}

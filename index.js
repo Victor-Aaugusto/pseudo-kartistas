@@ -1,10 +1,12 @@
 import  {listarTabela} from "./script/view.js"
-import {criarCamp} from './script/controladores.js'
 import {adicionarCorridaControle, adicionarPilotoControle} from './script/controladores.js'
 import {adicionaPilotoContainer, adicionarCorridaSection} from './script/dom.js'
+import criarCampeonato from './script/criariCampeonato.js'
 
+export const campeonato = criarCampeonato()
+export default campeonato
 
-
+window.campeonato = campeonato
 // ADICIONA O ELEMENTO NA TELA
 
 adicionaPilotoContainer.addEventListener('click', () => {
@@ -29,10 +31,14 @@ adicionarCorridaSection.addEventListener('click', () => {
 
 // EVENTO PARA ADICIONAR PILOTO
 
-adcPiloto.addEventListener('click', adicionarPilotoControle)
+adcPiloto.addEventListener('click', () =>{
+      adicionarPilotoControle(campeonato)
+})
 
 // EVENTO PARA ADICIONAR CORRIDA
 
-adcCorrida.addEventListener('click', adicionarCorridaControle)
+adcCorrida.addEventListener('click', () =>{
+     adicionarCorridaControle(campeonato)
+})
 
-listarTabela(criarCamp.getPilotos())
+listarTabela(campeonato.getPilotos())

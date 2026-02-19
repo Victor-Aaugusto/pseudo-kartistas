@@ -1,5 +1,7 @@
-import criarCampeonato from './criarCampenato.js'
+import criarCampeonato from './criariCampeonato.js'
 import { corpoTabela, tabela } from "./dom.js"
+
+const mensagemRetorno = document.getElementById('mensagemReturn')
 
 function renderizar(tabelaOrdenada, pilotosCadastrados){
     tabelaOrdenada.forEach((item, index) =>{
@@ -47,13 +49,23 @@ function renderizar(tabelaOrdenada, pilotosCadastrados){
     return tabelaOrdenada
 }
 
+
+export function mensagemReturn (mensagem) {
+    mensagemRetorno.textContent = mensagem
+
+}
+
 // LIMPAR CAMPOS
 export function limparCampos(){
-        
-     document.querySelectorAll('.adicionarDados input').forEach(item => {
+    const sectionAdicionaCorrida = document.getElementById('adicionarCorridaSection')
+    document.getElementById('mensagemReturn').textContent = ''
+
+    document.querySelectorAll('.adicionarDados input').forEach(item => {
         item.value = ''
     })
+
+    sectionAdicionaCorrida.classList.remove('adicionarDados-active')
 }
 
 
-export default {renderizar, listarTabela, limparCampos}
+export default {renderizar, listarTabela, limparCampos, mensagemReturn}
