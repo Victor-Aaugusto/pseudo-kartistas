@@ -1,0 +1,18 @@
+<%- include('partials/header', { title: 'Entrar' }) %>
+<section class="login-section container">
+  <div class="login-aside"><span class="eyebrow"><span class="eyebrow-line"></span> ÁREA DO PILOTO</span><h1>Pronto para<br><span>entrar na pista?</span></h1><p>Acesse sua conta para acompanhar sua temporada.</p><div class="login-decoration" aria-hidden="true">PK<span>01</span></div></div>
+  <div class="login-card"><span class="eyebrow text-muted-green">BEM-VINDO DE VOLTA</span><h2>Entrar na conta</h2><p class="form-intro">Use seus dados de acesso para continuar.</p>
+    <form method="post" action="/login">
+      <div class="mb-3"><label class="form-label" for="email">E-mail</label>
+        <input class="form-control" id="email" name="email" type="email" required placeholder="voce@exemplo.com" autocomplete="email">
+      </div>
+      <div class="mb-4">
+        <label class="form-label" for="senha">Senha</label>
+        <input class="form-control" id="senha" name="senha" type="password" required placeholder="Sua senha" autocomplete="current-password">
+      </div>
+      <button class="btn btn-lime w-100" type="submit">Entrar</button>
+      <p class="form-intro text-center mt-4 mb-0">Ainda não tem conta? <a class="link-light" href="/usuarios/novo">Criar usuário</a></p>
+    </form>
+  </div>
+</section>
+<%- include('partials/footer') %>

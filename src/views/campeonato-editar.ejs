@@ -1,0 +1,35 @@
+<% const campeonato = typeof campeonatoSelecionado !== 'undefined' ? campeonatoSelecionado : (typeof data !== 'undefined' ? (data.data || data) : {}) %>
+<%- include('partials/header', { title: 'Editar campeonato' }) %>
+<script src="/js/updatedCamp.js" defer></script>
+<section class="page-banner">
+  <div class="container">
+    <span class="eyebrow text-muted-green">TEMPORADA</span>
+    <h1>Editar campeonato</h1>
+    <p>Atualize as informações de <%= campeonato.name || 'seu campeonato' %>.</p>
+  </div>
+</section>
+
+<section class="container section-block">
+  <div class="login-card">
+    <span class="eyebrow text-muted-green">DADOS DO CAMPEONATO</span>
+    <h2>Informações</h2>
+    <p class="form-intro">Altere o nome do campeonato e salve as mudanças.</p>
+
+    <form
+      id="form-editar-campeonato"
+      class="row g-3"
+      data-api-url="/api/campeonato/<%= campeonato.id %>/editar"
+      data-api-method="PUT">
+      <div class="col-12">
+        <label class="form-label" for="name">Nome do campeonato</label>
+        <input class="form-control" type="text" id="name" name="name" maxlength="255" value="<%= campeonato.name || '' %>" required>
+      </div>
+      <div class="col-12 d-flex flex-wrap gap-2 mt-4">
+        <button class="btn btn-lime" type="submit">Salvar alterações</button>
+        <a class="btn btn-outline-light" href="/campeonato/<%= campeonato.id %>">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

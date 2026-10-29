@@ -1,0 +1,17 @@
+<%- include('partials/header', { title: 'Criar usuário' }) %>
+<section class="page-banner"><div class="container"><span class="eyebrow text-muted-green">COMUNIDADE</span><h1>Criar usuário</h1><p>Cadastre os dados do piloto para participar das corridas.</p></div></section>
+
+<section class="container section-block">
+  <div class="login-card">
+    <span class="eyebrow text-muted-green">NOVO CADASTRO</span><h2>Dados do usuário</h2>
+    <p class="form-intro">Preencha as informações para criar a conta.</p>
+    <form class="row g-3" method="post" action="/usuarios">
+      <div class="col-12"><label class="form-label" for="name">Nome</label><input class="form-control" id="name" name="name" type="text" maxlength="255" autocomplete="name" required></div>
+      <div class="col-md-6"><label class="form-label" for="email">E-mail</label><input class="form-control" id="email" name="email" type="email" maxlength="255" autocomplete="email" required></div>
+      <div class="col-md-6"><label class="form-label" for="phone">Telefone</label><input class="form-control" id="phone" name="phone" type="tel" maxlength="255" autocomplete="tel" required></div>
+      <div class="col-12"><label class="form-label" for="senha">Senha</label><input class="form-control" id="senha" name="senha" type="password" autocomplete="new-password" required></div>
+      <div class="col-12 d-flex flex-wrap gap-2 mt-4"><button class="btn btn-lime" type="submit">Criar conta</button><a class="btn btn-outline-light" href="/usuarios">Cancelar</a></div>
+    </form>
+  </div>
+</section>
+<%- include('partials/footer') %>

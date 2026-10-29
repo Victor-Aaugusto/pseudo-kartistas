@@ -1,0 +1,58 @@
+<% const campeonato = typeof campeonatoSelecionado !== 'undefined' ? campeonatoSelecionado : (typeof data !== 'undefined' ? (data.data || data) : {}) %>
+<% const corridasDoCampeonato = campeonato.CorridaList || campeonato.corridas || [] %>
+<% const usuarioAtual = typeof currentUser !== 'undefined' ? currentUser : (typeof user !== 'undefined' ? user : null) %>
+<% const adminPodeCriarCorrida = usuarioAtual?.role === 'admin' %>
+<%- include('partials/header', { title: 'Detalhes do campeonato' }) %>
+
+<section class="page-banner">
+  <div class="container">
+    <span class="eyebrow text-muted-green">TEMPORADA</span>
+    <h1><%= campeonato.name || 'Campeonato' %></h1>
+    <p>Detalhes e etapas deste campeonato.</p>
+  </div>
+</section>
+
+<section class="container section-block content-grid">
+  <div class="section-heading">
+    <div><span class="eyebrow text-muted-green">VISÃO GERAL</span><h2>Corridas do campeonato</h2></div>
+    <span class="championship-total"><%= corridasDoCampeonato.length %> <%= corridasDoCampeonato.length === 1 ? 'corrida' : 'corridas' %></span>
+  </div>
+
+  <div class="d-flex flex-wrap gap-2 mb-4">
+    <% if (campeonato.id != null) { %>
+      <% if (adminPodeCriarCorrida) { %><a class="btn btn-outline-light" href="/campeonato/<%= campeonato.id %>/editar">Editar campeonato</a><% } %>
+      <% if (adminPodeCriarCorrida) { %><a class="btn btn-lime" href="/corridas/nova?campeonatoId=<%= campeonato.id %>">Criar corrida</a><% } %>
+      <a class="btn btn-ghost" href="/campeonato/<%= campeonato.id %>/classificacao">Ver classificação</a>
+    <% } %>
+    <a class="btn btn-outline-light" href="/campeonatos">Voltar aos campeonatos</a>
+  </div>
+
+  <% if (campeonato.userCamp) { %>
+    <p class="form-intro">Responsável: <strong><%= campeonato.userCamp.name %></strong></p>
+  <% } %>
+
+  <% if (corridasDoCampeonato.length > 0) { %>
+    <div class="row g-3">
+      <% corridasDoCampeonato.forEach((corrida, index) => { %>
+        <div class="col-md-6 col-xl-4">
+          <article class="feature-card race-card">
+            <span class="card-index"><%= String(index + 1).padStart(2, '0') %></span>
+            <span class="feature-icon" aria-hidden="true">🏁</span>
+            <h3><%= corrida.name %></h3>
+            <p>Etapa <%= index + 1 %></p>
+            <a class="race-ranking-link" href="/campeonato/<%= campeonato.id %>/corrida/<%= corrida.id %>">Abrir corrida <span aria-hidden="true">↗</span></a>
+          </article>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div class="empty-state">
+      <div class="empty-icon" aria-hidden="true">🏎️</div>
+      <h3>Nenhuma corrida neste campeonato</h3>
+      <p>Adicione a primeira etapa para começar a temporada.</p>
+      <% if (campeonato.id != null && adminPodeCriarCorrida) { %><a class="btn btn-lime" href="/corridas/nova?campeonatoId=<%= campeonato.id %>">Criar primeira corrida</a><% } %>
+    </div>
+  <% } %>
+</section>
+
+<%- include('partials/footer') %>

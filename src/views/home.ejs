@@ -1,0 +1,75 @@
+<% const listaCampeonatos = typeof campeonatos !== 'undefined' ? campeonatos : [] %>
+<% const listaCorridas = typeof corridas !== 'undefined' ? corridas : listaCampeonatos.flatMap(campeonato => (campeonato.CorridaList || []).map(corrida => ({ ...corrida, campeonato }))) %>
+<% const usuarioAtual = typeof currentUser !== 'undefined' ? currentUser : (typeof user !== 'undefined' ? user : null) %>
+<%- include('partials/header', { title: 'Início', user: (typeof user !== 'undefined' ? user : null) }) %>
+<section class="hero-section">
+  <div class="container hero-content">
+    <div class="hero-copy">
+      <span class="eyebrow"><span class="eyebrow-line"></span> TEMPORADA DE KART</span>
+      <% if (typeof user !== 'undefined' && user) { %>
+        <p class="mb-0 mt-3 text-muted-green">Olá, <strong><%= user.nome || user.name || user.email %></strong></p>
+      <% } %>
+      <h1>A corrida começa<br>na <span>classificação.</span></h1>
+      <p>Campeonatos, corridas e resultados em um só lugar. Acompanhe cada volta e descubra quem está na frente.</p>
+      <div class="d-flex flex-wrap gap-3 mt-4">
+        <a href="/campeonatos" class="btn btn-lime btn-lg">Ver campeonatos <span aria-hidden="true">↗</span></a>
+        <a href="/classificacao" class="btn btn-ghost btn-lg">Acessar classificação</a>
+      </div>
+    </div>
+    <div class="hero-mark" aria-hidden="true"><span>PK</span><i></i><i></i><i></i></div>
+  </div>
+  <div class="hero-bottom container"><span>ACELERE. COMPITA. REPITA.</span><span>01 — 04</span></div>
+</section>
+<section class="container section-block">
+  <div class="section-heading"><div><span class="eyebrow text-muted-green">NA TEMPORADA</span><h2>Campeonatos</h2></div><span class="championship-total"><%= listaCampeonatos.length %> <%= listaCampeonatos.length === 1 ? 'campeonato' : 'campeonatos' %></span></div>
+  <% if (listaCampeonatos.length > 0) { %>
+    <div class="row g-3">
+      <% listaCampeonatos.forEach((campeonato, index) => { %>
+        <div class="col-md-6 col-xl-4">
+          <a class="feature-card championship-card" href="<%= usuarioAtual ? `/campeonato/${campeonato.id}` : '/login' %>">
+            <span class="card-index"><%= String(index + 1).padStart(2, '0') %></span>
+            <span class="feature-icon" aria-hidden="true">🏁</span>
+            <h3><%= campeonato.name %></h3>
+            <p><%= campeonato._count.CorridaList %> <%= campeonato._count.CorridaList === 1 ? 'corrida cadastrada' : 'corridas cadastradas' %></p>
+            <% if (!usuarioAtual) { %><span class="race-ranking-link">Entre para ver os detalhes <span aria-hidden="true">↗</span></span><% } %>
+          </a>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div class="empty-state">
+      <div class="empty-icon" aria-hidden="true">🏆</div>
+      <h3>Nenhum campeonato cadastrado</h3>
+      <p>Quando um campeonato for criado, ele aparecerá aqui.</p>
+    </div>
+  <% } %>
+</section>
+<section class="container section-block pt-0">
+  <div class="section-heading">
+    <div><span class="eyebrow text-muted-green">NA PISTA</span><h2>Corridas</h2></div>
+    <span class="championship-total"><%= listaCorridas.length %> <%= listaCorridas.length === 1 ? 'corrida' : 'corridas' %></span>
+  </div>
+  <% if (listaCorridas.length > 0) { %>
+    <div class="row g-3">
+      <% listaCorridas.forEach((corrida, index) => { %>
+        <div class="col-md-6 col-xl-4">
+          <article class="feature-card race-card">
+            <span class="card-index"><%= String(index + 1).padStart(2, '0') %></span>
+            <span class="feature-icon" aria-hidden="true">🏁</span>
+            <p class="race-championship"><%= corrida.campeonato?.name || 'Campeonato' %></p>
+            <h3><%= corrida.name %></h3>
+            <a class="race-ranking-link" href="/campeonato/<%= corrida.campeonatoId %>/corrida/<%= corrida.id %>">Abrir corrida <span aria-hidden="true">↗</span></a>
+          </article>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div class="empty-state">
+      <div class="empty-icon" aria-hidden="true">🏎️</div>
+      <h3>Nenhuma corrida cadastrada</h3>
+      <p>As corridas dos campeonatos aparecerão aqui.</p>
+      <a class="btn btn-lime" href="/corridas">Ver corridas</a>
+    </div>
+  <% } %>
+</section>
+<%- include('partials/footer') %>

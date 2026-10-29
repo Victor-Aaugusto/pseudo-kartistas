@@ -1,0 +1,71 @@
+<% const origemPilotos = typeof users !== 'undefined' ? users : (typeof data !== 'undefined' ? data : []) %>
+<% const listaPilotos = Array.isArray(origemPilotos) ? origemPilotos : (Array.isArray(origemPilotos?.data) ? origemPilotos.data : []) %>
+<% const pilotosOrdenados = [...listaPilotos].sort((a, b) => (b._count?.corridas || 0) - (a._count?.corridas || 0)) %>
+<%- include('partials/header', { title: 'Pilotos' }) %>
+
+<section class="page-banner">
+  <div class="container">
+    <span class="eyebrow text-muted-green">COMUNIDADE</span>
+    <h1>Pilotos</h1>
+    <p>Conheça quem está na pista e participe da temporada.</p>
+  </div>
+</section>
+
+<section class="container section-block content-grid">
+  <div class="section-heading">
+    <div><span class="eyebrow text-muted-green">CADASTROS</span><h2>Todos os pilotos</h2></div>
+    <span class="championship-total">Ordenados por corridas · <%= pilotosOrdenados.length %> <%= pilotosOrdenados.length === 1 ? 'piloto' : 'pilotos' %></span>
+  </div>
+  <% if (currentUser?.role === 'admin') { %><a class="btn btn-lime mb-4" href="/usuarios/novo">Cadastrar piloto</a><% } %>
+
+  <% if (listaPilotos.length > 0) { %>
+    <div class="row g-3">
+      <% pilotosOrdenados.forEach((piloto, index) => { %>
+        <% const resultadosPiloto = Array.isArray(piloto.resultadoCorridas) ? piloto.resultadoCorridas : [] %>
+        <% const quantidadePrimeiros = resultadosPiloto.filter(resultado => resultado.posicao === 1).length %>
+        <% const quantidadeSegundos = resultadosPiloto.filter(resultado => resultado.posicao === 2).length %>
+        <% const quantidadeTerceiros = resultadosPiloto.filter(resultado => resultado.posicao === 3).length %>
+        <div class="col-md-6 col-xl-4">
+          <article class="feature-card pilot-card">
+            <span class="card-index"><%= String(index + 1).padStart(2, '0') %></span>
+            <span class="feature-icon pilot-avatar" aria-hidden="true"><%= (piloto.name || 'P').trim().charAt(0).toUpperCase() %></span>
+            <h3><%= piloto.name || 'Piloto' %></h3>
+            <p class="mt-2"><strong><%= piloto._count?.corridas || 0 %></strong> <%= (piloto._count?.corridas || 0) === 1 ? 'corrida' : 'corridas' %></p>
+            <div class="pilot-podium-stats" aria-label="Pódios do piloto">
+              <div><strong><%= quantidadePrimeiros %></strong><span>1º lugar</span></div>
+              <div><strong><%= quantidadeSegundos %></strong><span>2º lugar</span></div>
+              <div><strong><%= quantidadeTerceiros %></strong><span>3º lugar</span></div>
+            </div>
+            <% if (piloto.id != null) { %><a class="race-ranking-link d-inline-block mt-3" href="/usuarios/<%= piloto.id %>/public">Ver perfil do piloto <span aria-hidden="true">↗</span></a><% } %>
+            <% if (piloto.phone) { %><p class="mt-1"><%= piloto.phone %></p><% } %>
+          </article>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div class="empty-state">
+      <div class="empty-icon" aria-hidden="true">🏎️</div>
+      <h3>Nenhum piloto cadastrado</h3>
+      <p>Cadastre o primeiro piloto para começar.</p>
+      <% if (currentUser?.role === 'admin') { %><a class="btn btn-lime" href="/usuarios/novo">Cadastrar piloto</a><% } %>
+    </div>
+  <% } %>
+</section>
+
+<script>
+  document.addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-delete-url]');
+    if (!button) return;
+    if (!window.confirm(`Excluir o piloto ${button.dataset.pilotName}?`)) return;
+    button.disabled = true;
+    try {
+      const response = await fetch(button.dataset.deleteUrl, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Falha ao excluir piloto');
+      window.location.reload();
+    } catch {
+      window.alert('Não foi possível excluir o piloto. Verifique se ele está associado a corridas ou resultados.');
+      button.disabled = false;
+    }
+  });
+</script>
+<%- include('partials/footer') %>

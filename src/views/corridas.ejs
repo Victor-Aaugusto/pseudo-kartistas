@@ -1,0 +1,71 @@
+﻿<%- include('partials/header', { title: 'Corridas' }) %>
+<% const usuarioAtual = typeof currentUser !== 'undefined' ? currentUser : (typeof user !== 'undefined' ? user : null) %>
+<% const adminPodeCriarCorrida = usuarioAtual?.role === 'admin' %>
+<section class="page-banner">
+  <div class="container">
+    <span class="eyebrow text-muted-green">NA PISTA</span>
+    <h1>Corridas</h1>
+    <p>Etapas, pistas e resultados da temporada.</p>
+  </div>
+</section>
+
+<section class="container section-block content-grid">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow text-muted-green">CALENDÁRIO</span>
+      <h2>Etapas</h2>
+    </div>
+    <span class="championship-total"><%= data.length %> <%= data.length === 1 ? 'corrida' : 'corridas' %></span>
+  </div>
+  <% if (adminPodeCriarCorrida) { %><a class="btn btn-lime mb-4" href="/corridas/nova">Criar corrida</a><% } %>
+
+  <% if (data.length > 0) { %>
+    <div class="row g-3">
+      <% data.forEach((corrida, index) => { %>
+        <div class="col-md-6 col-xl-4">
+          <article class="feature-card race-card">
+            <span class="card-index"><%= String(index + 1).padStart(2, '0') %></span>
+            <span class="feature-icon" aria-hidden="true">🏎️</span>
+            <h3><%= corrida.name %></h3>
+            <p class="race-championship"><%= corrida.campeonato?.name || 'Campeonato não informado' %></p>
+            <% const pilotosInscritos = corrida.userId || [] %>
+            <p><%= pilotosInscritos.length %> <%= pilotosInscritos.length === 1 ? 'piloto inscrito' : 'pilotos inscritos' %></p>
+            <div class="d-flex align-items-center justify-content-between mt-3">
+              <a class="btn btn-lime btn-sm" href="/corridas/<%= corrida.id %>">Adicionar resultado</a>
+              <% if (adminPodeCriarCorrida) { %>
+                <a class="btn btn-outline-light btn-sm" href="/corridas/<%= corrida.id %>/editar">Editar</a>
+                <button class="btn btn-outline-danger btn-sm" type="button" data-delete-url="/api/corridas/<%= corrida.id %>" aria-label="Excluir corrida <%= corrida.name %>">Excluir</button>
+              <% } %>
+            </div>
+          </article>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div class="empty-state">
+      <div class="empty-icon" aria-hidden="true">🏎️</div>
+      <h3>Nenhuma corrida cadastrada</h3>
+      <p>Quando houver corridas, elas aparecerão aqui.</p>
+    </div>
+  <% } %>
+</section>
+<script>
+  document.addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-delete-url]');
+    if (!button) return;
+
+    const label = button.getAttribute('aria-label') || 'esta corrida';
+    if (!window.confirm(`Tem certeza que deseja ${label.toLowerCase()}?`)) return;
+
+    button.disabled = true;
+    try {
+      const response = await fetch(button.dataset.deleteUrl, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Falha ao excluir corrida');
+      window.location.reload();
+    } catch (error) {
+      window.alert('Não foi possível excluir a corrida. Tente novamente.');
+      button.disabled = false;
+    }
+  });
+</script>
+<%- include('partials/footer') %>

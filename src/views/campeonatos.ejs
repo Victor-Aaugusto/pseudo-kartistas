@@ -1,0 +1,67 @@
+﻿<% const listaCampeonatos = typeof campeonatos !== 'undefined' ? campeonatos : data %>
+<% const usuarioAtual = typeof currentUser !== 'undefined' ? currentUser : (typeof user !== 'undefined' ? user : null) %>
+<% const adminPodeGerenciar = usuarioAtual?.role === 'admin' %>
+<%- include('partials/header', { title: 'Campeonatos' }) %>
+<section class="page-banner">
+  <div class="container">
+    <span class="eyebrow text-muted-green">TEMPORADA</span>
+    <h1>Campeonatos</h1>
+    <p>Veja os campeonatos e acompanhe cada etapa.</p>
+  </div>
+</section>
+
+<section class="container section-block content-grid">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow text-muted-green">VISÃO GERAL</span>
+      <h2>Todos os campeonatos</h2>
+    </div>
+    <span class="championship-total"><%= listaCampeonatos.length %> <%= listaCampeonatos.length === 1 ? 'campeonato' : 'campeonatos' %></span>
+  </div>
+  <% if (usuarioAtual) { %><a class="btn btn-lime mb-4" href="/campeonatos/novo">Criar campeonato</a><% } %>
+
+  <% if (listaCampeonatos.length > 0) { %>
+    <div class="row g-3">
+      <% listaCampeonatos.forEach((campeonato, index) => { %>
+        <div class="col-md-6 col-xl-4">
+          <article class="feature-card championship-card">
+            <span class="card-index"><%= String(index + 1).padStart(2, '0') %></span>
+            <span class="feature-icon" aria-hidden="true">🏁</span>
+            <h3><a class="text-decoration-none text-reset" href="<%= usuarioAtual ? `/campeonato/${campeonato.id}` : '/login' %>"><%= campeonato.name %></a></h3>
+            <p><%= campeonato._count.CorridaList %> <%= campeonato._count.CorridaList === 1 ? 'corrida cadastrada' : 'corridas cadastradas' %></p>
+            <div class="d-flex align-items-center justify-content-between mt-3">
+              <a class="btn btn-lime btn-sm" href="<%= usuarioAtual ? `/campeonato/${campeonato.id}` : '/login' %>"><%= usuarioAtual ? 'Detalhes' : 'Entrar para ver' %></a>
+              <% if (adminPodeGerenciar) { %><button class="btn btn-outline-danger btn-sm" type="button" data-delete-url="/api/campeonato/<%= campeonato.id %>" aria-label="Excluir campeonato <%= campeonato.name %>">Excluir</button><% } %>
+            </div>
+          </article>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div class="empty-state">
+      <div class="empty-icon" aria-hidden="true">🏆</div>
+      <h3>Nenhum campeonato cadastrado</h3>
+      <p>Quando houver campeonatos, eles aparecerão aqui.</p>
+    </div>
+  <% } %>
+</section>
+<script>
+  document.addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-delete-url]');
+    if (!button) return;
+
+    const label = button.getAttribute('aria-label') || 'este campeonato';
+    if (!window.confirm(`Tem certeza que deseja ${label.toLowerCase()}?`)) return;
+
+    button.disabled = true;
+    try {
+      const response = await fetch(button.dataset.deleteUrl, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Falha ao excluir campeonato');
+      window.location.reload();
+    } catch (error) {
+      window.alert('Não foi possível excluir o campeonato. Tente novamente.');
+      button.disabled = false;
+    }
+  });
+</script>
+<%- include('partials/footer') %>

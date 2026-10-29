@@ -1,0 +1,80 @@
+<% const usuario = typeof user !== 'undefined' ? user : (typeof data !== 'undefined' ? (data.data || data) : {}) %>
+<%- include('partials/header', { title: 'Editar usuário' }) %>
+
+<section class="page-banner">
+  <div class="container">
+    <span class="eyebrow text-muted-green">PERFIL DO PILOTO</span>
+    <h1>Editar usuário</h1>
+    <p>Atualize seus dados cadastrais.</p>
+  </div>
+</section>
+
+<section class="container section-block">
+  <div class="login-card">
+    <span class="eyebrow text-muted-green">DADOS CADASTRAIS</span>
+    <h2>Informações da conta</h2>
+    <p class="form-intro">Altere seu nome, e-mail ou telefone.</p>
+
+    <form
+      id="form-editar-usuario"
+      class="row g-3"
+      data-api-url="/api/users/<%= usuario.id %>">
+      <div class="col-12">
+        <label class="form-label" for="name">Nome</label>
+        <input class="form-control" id="name" name="name" type="text" maxlength="255" value="<%= usuario.name || '' %>" autocomplete="name" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="email">E-mail</label>
+        <input class="form-control" id="email" name="email" type="email" maxlength="255" value="<%= usuario.email || '' %>" autocomplete="email" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="phone">Telefone</label>
+        <input class="form-control" id="phone" name="phone" type="tel" maxlength="255" value="<%= usuario.phone || '' %>" autocomplete="tel" required>
+      </div>
+      <div class="col-12 d-flex flex-wrap gap-2 mt-4">
+        <button class="btn btn-lime" type="submit">Salvar alterações</button>
+        <a class="btn btn-outline-light" href="/">Cancelar</a>
+      </div>
+      <p class="form-intro mb-0" data-form-message role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+
+<script>
+  document.querySelector('#form-editar-usuario')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const button = form.querySelector('button[type="submit"]');
+    const message = form.querySelector('[data-form-message]');
+    button.disabled = true;
+    message.textContent = '';
+    message.classList.remove('text-danger', 'text-success');
+
+    try {
+      const response = await fetch(form.dataset.apiUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(Object.fromEntries(new FormData(form)))
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Não foi possível salvar os dados.');
+      }
+
+      message.textContent = 'Dados atualizados com sucesso.';
+      message.classList.add('text-success');
+    } catch (error) {
+      message.textContent = error.message || 'Não foi possível salvar os dados.';
+      message.classList.add('text-danger');
+    } finally {
+      button.disabled = false;
+    }
+  });
+</script>
+
+<%- include('partials/footer') %>

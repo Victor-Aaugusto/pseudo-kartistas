@@ -1,0 +1,79 @@
+<%- include('partials/header', { title: 'Classificação' }) %>
+<% const usuarioAtual = typeof currentUser !== 'undefined' ? currentUser : (typeof user !== 'undefined' ? user : null) %>
+<% const adminPodeCriarCorrida = usuarioAtual?.role === 'admin' %>
+<section class="page-banner">
+  <div class="container">
+    <span class="eyebrow text-muted-green">DISPUTA PELO TOPO</span>
+    <h1>Classificação</h1>
+    <p>Pontos, posições e a evolução dos pilotos.</p>
+  </div>
+</section>
+
+<section class="container section-block content-grid">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow text-muted-green">RANKING POR CAMPEONATO</span>
+      <h2><%= campeonatoSelecionado ? campeonatoSelecionado.name : 'Escolha um campeonato' %></h2>
+    </div>
+  </div>
+
+  <% if (campeonatos.length > 0) { %>
+    <nav class="championship-picker" aria-label="Selecionar campeonato">
+      <% campeonatos.forEach((campeonato) => { %>
+        <a
+          class="championship-option <%= campeonatoSelecionado && campeonatoSelecionado.id === campeonato.id ? 'is-selected' : '' %>"
+          href="/campeonato/<%= campeonato.id %>/classificacao"
+          <%= campeonatoSelecionado && campeonatoSelecionado.id === campeonato.id ? 'aria-current="page"' : '' %>>
+          <%= campeonato.name %>
+        </a>
+      <% }) %>
+    </nav>
+
+    <% if (campeonatoSelecionado) { %>
+      <% if (adminPodeCriarCorrida) { %>
+        <div class="d-flex justify-content-end mb-3">
+          <a class="btn btn-lime" href="/corridas/nova?campeonatoId=<%= campeonatoSelecionado.id %>">
+            Criar corrida neste campeonato
+          </a>
+        </div>
+      <% } %>
+      <div class="table-responsive ranking-wrap mt-4">
+        <table class="table ranking-table mb-0">
+          <thead>
+            <tr>
+              <th scope="col">POS.</th>
+              <th scope="col">PILOTO</th>
+              <th scope="col">PONTOS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (ranking.length > 0) { %>
+              <% ranking.forEach((piloto, index) => { %>
+                <tr>
+                  <td><%= String(index + 1).padStart(2, '0') %></td>
+                  <td><%= piloto.name %></td>
+                  <td><strong><%= piloto.pontos %></strong></td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr><td colspan="3" class="ranking-empty">Este campeonato ainda não tem resultados.</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <div class="empty-icon" aria-hidden="true">🏆</div>
+        <h3>Selecione um campeonato</h3>
+        <p>Escolha um dos campeonatos acima para ver sua classificação.</p>
+      </div>
+    <% } %>
+  <% } else { %>
+    <div class="empty-state">
+      <div class="empty-icon" aria-hidden="true">🏆</div>
+      <h3>Nenhum campeonato cadastrado</h3>
+      <p>A classificação aparecerá aqui quando houver campeonatos.</p>
+    </div>
+  <% } %>
+</section>
+<%- include('partials/footer') %>

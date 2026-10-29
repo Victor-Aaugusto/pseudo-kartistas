@@ -1,0 +1,93 @@
+<% const pacoteEdicao = typeof data !== 'undefined' ? data : {} %>
+<% const corridaEdicao = typeof corrida !== 'undefined' ? corrida : (pacoteEdicao.corrida || pacoteEdicao.data || pacoteEdicao) %>
+<% const listaCampeonatosEdicao = typeof campeonatos !== 'undefined' ? campeonatos : (pacoteEdicao.campeonatos || []) %>
+<% const resultadosCorrida = corridaEdicao.resultadoCorridas || pacoteEdicao.resultados || [] %>
+<%- include('partials/header', { title: 'Editar corrida' }) %>
+
+<section class="page-banner">
+  <div class="container">
+    <span class="eyebrow text-muted-green">NA PISTA</span>
+    <h1>Editar corrida</h1>
+    <p>Atualize as informações de <%= corridaEdicao.name || 'sua corrida' %>.</p>
+  </div>
+</section>
+
+<section class="container section-block">
+  <div class="login-card">
+    <span class="eyebrow text-muted-green">DADOS DA ETAPA</span>
+    <h2>Informações da corrida</h2>
+    <p class="form-intro">Altere o nome ou o campeonato associado à corrida.</p>
+
+    <form
+      id="form-editar-corrida"
+      class="row g-3"
+      data-api-url="/api/corridas/<%= corridaEdicao.id %>"
+      data-success-url="/corridas/<%= corridaEdicao.id %>">
+      <div class="col-12">
+        <label class="form-label" for="name">Nome da corrida</label>
+        <input class="form-control" type="text" id="name" name="name" maxlength="255" value="<%= corridaEdicao.name || '' %>" required>
+      </div>
+      <div class="col-12">
+        <label class="form-label" for="campeonatoId">Campeonato</label>
+        <% if (listaCampeonatosEdicao.length > 0) { %>
+          <select class="form-select" id="campeonatoId" name="campeonatoId" required>
+            <% listaCampeonatosEdicao.forEach((campeonato) => { %>
+              <option value="<%= campeonato.id %>" <%= campeonato.id === corridaEdicao.campeonatoId ? 'selected' : '' %>><%= campeonato.name %></option>
+            <% }) %>
+          </select>
+        <% } else { %>
+          <input type="hidden" name="campeonatoId" value="<%= corridaEdicao.campeonatoId %>">
+          <input class="form-control" type="text" value="<%= corridaEdicao.campeonato?.name || 'Campeonato atual' %>" disabled>
+        <% } %>
+      </div>
+      <div class="col-12 d-flex flex-wrap gap-2 mt-4">
+        <button class="btn btn-lime" type="submit">Salvar alterações</button>
+        <a class="btn btn-outline-light" href="/corridas/<%= corridaEdicao.id %>">Cancelar</a>
+      </div>
+    </form>
+  </div>
+
+  <article class="login-card mt-4">
+    <span class="eyebrow text-muted-green">RESULTADOS</span>
+    <h2>Posições de chegada</h2>
+    <p class="form-intro">Ajuste a colocação dos pilotos desta corrida.</p>
+
+    <% if (resultadosCorrida.length > 0) { %>
+      <form
+        id="form-editar-posicoes-corrida"
+        class="result-form"
+        data-api-url="/api/resultadoCorrida/<%= corridaEdicao.campeonatoId %>/<%= corridaEdicao.id %>/updateMany"
+        data-api-method="PUT"
+        data-success-url="/corridas/<%= corridaEdicao.id %>">
+        <div class="result-list js-sortable-results">
+          <% resultadosCorrida.forEach((resultado) => { %>
+            <div class="result-row js-result-edit-row" draggable="true" data-corrida-id="<%= corridaEdicao.id %>" data-user-id="<%= resultado.user?.id || resultado.userId %>">
+              <span class="drag-handle" aria-hidden="true" title="Arraste para reordenar">⠿</span>
+              <span class="result-position"><%= resultado.user?.name || resultado.userName || 'Piloto' %></span>
+              <label class="visually-hidden" for="posicao-<%= resultado.user?.id || resultado.userId %>">Posição de <%= resultado.user?.name || resultado.userName || 'piloto' %></label>
+              <select class="form-select js-result-position" id="posicao-<%= resultado.user?.id || resultado.userId %>" required>
+                <% for (let posicao = 1; posicao <= 10; posicao++) { %>
+                  <option value="<%= posicao %>" <%= resultado.posicao === posicao ? 'selected' : '' %>><%= posicao %>º lugar</option>
+                <% } %>
+              </select>
+              <span class="points-hint"><%= resultado.pontos || 0 %> pts</span>
+            </div>
+          <% }) %>
+        </div>
+        <div class="result-form-footer">
+          <p>Use posições diferentes para cada piloto. A pontuação será recalculada ao salvar.</p>
+          <button type="submit" class="btn btn-lime" data-save-results>Salvar posições</button>
+        </div>
+      </form>
+    <% } else { %>
+      <div class="empty-state">
+        <h3>Sem resultados cadastrados</h3>
+        <p>As posições poderão ser editadas depois que houver resultados nesta corrida.</p>
+      </div>
+    <% } %>
+  </article>
+</section>
+
+<script src="/js/updatedCorrida.js" defer></script>
+<script src="/js/reorderResultados.js" defer></script>
+<%- include('partials/footer') %>

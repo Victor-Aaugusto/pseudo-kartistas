@@ -1,0 +1,146 @@
+<% const perfil = typeof user !== 'undefined' && user ? user : (typeof currentUser !== 'undefined' ? currentUser : {}) %>
+<% const sessaoPerfil = typeof currentUser !== 'undefined' && currentUser ? currentUser : {} %>
+<% const idPerfil = perfil.id || sessaoPerfil.id %>
+<% const nomePerfil = perfil.name || perfil.nome || 'Piloto' %>
+<% const perfilPublico = !perfil.email && !perfil.phone %>
+<% const dashboardDisponivel = typeof dashboard !== 'undefined' && dashboard %>
+<% const estatisticas = dashboardDisponivel ? dashboard : {} %>
+<% const pontosPorCampeonato = Array.isArray(estatisticas.pontosPorCampeonato) ? estatisticas.pontosPorCampeonato : [] %>
+<%- include('partials/header', { title: 'Meu perfil' }) %>
+
+<section class="page-banner">
+  <div class="container">
+    <span class="eyebrow text-muted-green">DASHBOARD DO PILOTO</span>
+    <h1><%= perfilPublico ? `Perfil de ${nomePerfil}` : `Olá, ${nomePerfil}` %></h1>
+    <p>Acompanhe seu desempenho e seus resultados na temporada.</p>
+  </div>
+</section>
+
+<section class="container section-block">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow text-muted-green">SEU DESEMPENHO</span>
+      <h2>Resumo da temporada</h2>
+    </div>
+    <a class="btn btn-outline-light btn-sm" href="/classificacao">Ver classificação</a>
+  </div>
+
+  <% if (!dashboardDisponivel) { %>
+    <div class="alert alert-secondary" role="status">
+      As estatísticas aparecerão aqui quando os dados do dashboard forem carregados.
+    </div>
+  <% } %>
+
+  <div class="row g-3 dashboard-stats">
+    <div class="col-6 col-lg">
+      <article class="dashboard-stat-card">
+        <span>Campeonatos</span>
+        <strong><%= dashboardDisponivel ? (estatisticas.totalCampeonatos ?? 0) : '—' %></strong>
+      </article>
+    </div>
+    <div class="col-6 col-lg">
+      <article class="dashboard-stat-card">
+        <span>Corridas</span>
+        <strong><%= dashboardDisponivel ? (estatisticas.totalCorridas ?? 0) : '—' %></strong>
+      </article>
+    </div>
+    <div class="col-4 col-lg">
+      <article class="dashboard-stat-card podium-stat">
+        <span>1º lugar</span>
+        <strong><%= dashboardDisponivel ? (estatisticas.podios?.p1 ?? 0) : '—' %></strong>
+      </article>
+    </div>
+    <div class="col-4 col-lg">
+      <article class="dashboard-stat-card podium-stat">
+        <span>2º lugar</span>
+        <strong><%= dashboardDisponivel ? (estatisticas.podios?.p2 ?? 0) : '—' %></strong>
+      </article>
+    </div>
+    <div class="col-4 col-lg">
+      <article class="dashboard-stat-card podium-stat">
+        <span>3º lugar</span>
+        <strong><%= dashboardDisponivel ? (estatisticas.podios?.p3 ?? 0) : '—' %></strong>
+      </article>
+    </div>
+  </div>
+
+  <article class="login-card mt-4">
+    <div class="section-heading">
+      <div>
+        <span class="eyebrow text-muted-green">PONTUAÇÃO</span>
+        <h2>Pontos por campeonato</h2>
+      </div>
+      <span class="championship-total"><%= pontosPorCampeonato.length %> <%= pontosPorCampeonato.length === 1 ? 'campeonato' : 'campeonatos' %></span>
+    </div>
+
+    <% if (pontosPorCampeonato.length > 0) { %>
+      <div class="table-responsive">
+        <table class="table dashboard-table align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col">Campeonato</th>
+              <th scope="col" class="text-end">Pontos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% pontosPorCampeonato.forEach((item) => { %>
+              <tr>
+                <td><%= item.campeonatoNome || item.name || 'Campeonato' %></td>
+                <td class="text-end fw-bold"><%= item.pontos ?? 0 %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="empty-state dashboard-empty">
+        <h3><%= dashboardDisponivel ? 'Ainda sem pontuação' : 'Estatísticas indisponíveis' %></h3>
+        <p><%= dashboardDisponivel ? 'Seus pontos por campeonato aparecerão aqui após os resultados das corridas.' : 'O controller precisa enviar os totais e os pontos agrupados por campeonato.' %></p>
+      </div>
+    <% } %>
+  </article>
+
+  <% if (!perfilPublico) { %>
+  <article class="login-card mt-4">
+    <span class="eyebrow text-muted-green">MINHA CONTA</span>
+    <h2 class="mt-2">Dados de acesso e contato</h2>
+    <p class="form-intro">Atualize seu e-mail, telefone ou crie uma nova senha. Deixe a senha em branco para mantê-la.</p>
+
+    <form
+      id="form-atualizar-perfil"
+      class="row g-3"
+      data-api-url="/api/users/<%= idPerfil || '' %>"
+      data-success-url="/perfil">
+      <div class="col-md-6">
+        <label class="form-label" for="perfil-email">E-mail</label>
+        <input class="form-control" id="perfil-email" name="email" type="email" maxlength="255" value="<%= perfil.email || '' %>" autocomplete="email" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="perfil-phone">Telefone</label>
+        <input class="form-control" id="perfil-phone" name="phone" type="tel" maxlength="255" value="<%= perfil.phone || '' %>" autocomplete="tel" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="perfil-senha">Nova senha <span class="text-muted">(opcional)</span></label>
+        <input class="form-control" id="perfil-senha" name="senha" type="password" autocomplete="new-password">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="perfil-confirmar-senha">Confirmar nova senha</label>
+        <input class="form-control" id="perfil-confirmar-senha" name="confirmarSenha" type="password" autocomplete="new-password">
+      </div>
+      <div class="col-12 d-flex flex-wrap align-items-center gap-3 mt-4">
+        <button class="btn btn-lime" type="submit">Salvar alterações</button>
+        <p class="form-intro mb-0" data-profile-message role="status" aria-live="polite"></p>
+      </div>
+    </form>
+  </article>
+  <% } %>
+
+  <div class="d-flex flex-wrap gap-2 mt-4">
+    <a class="btn btn-lime" href="/campeonatos">Explorar campeonatos</a>
+    <a class="btn btn-outline-light" href="/corridas">Ver corridas</a>
+    <a class="btn btn-ghost" href="/usuarios">Ver pilotos</a>
+  </div>
+</section>
+
+<% if (!perfilPublico) { %><script src="/js/updatedUser.js" defer></script><% } %>
+<%- include('partials/footer') %>

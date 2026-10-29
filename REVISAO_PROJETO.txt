@@ -1,0 +1,108 @@
+REVISAO DO PROJETO PSEUDO KARTISTAS
+Data: 28/10/2026
+
+ESCOPO
+Revisao estatica dos arquivos de aplicacao em src (servidor, rotas, controllers,
+middlewares, schemas, servicos, views e scripts), do schema Prisma e da configuracao
+principal do projeto. Nao alterei os arquivos da aplicacao. Nao executei testes ou
+validacoes automatizadas. Dependencias, arquivos gerados e o conteudo de cada SQL
+de migracao nao foram auditados individualmente.
+
+RESUMO
+O fluxo principal de campeonatos, corridas, resultados e perfil esta implementado.
+Tambem ja existem verificacao de senha com bcrypt, cookie HTTP-only para o token,
+middleware que valida o token e carrega o usuario do banco, verificacao de role,
+validacao de entrada com Zod, calculo de pontos e atualizacao de posicoes em
+transacao. Os itens abaixo foram encontrados no estado atual do workspace e podem
+incluir pontos que voce ja corrigiu em outra versao.
+
+PENDENCIAS PRIORITARIAS
+
+1. Corrigir os scripts de build e start
+Arquivo: package.json
+O script build esta definido como "tsx", sem arquivo de entrada ou comando de
+compilacao. O start aponta para "build/server.ts", caminho que nao e gerado por
+esse build. Assim, o fluxo declarado para iniciar em producao nao esta consistente.
+Definir uma compilacao TypeScript e apontar o start para o artefato resultante.
+
+2. Garantir que os resultados usem pilotos associados a corrida
+Arquivos: src/controler/corridasControler.ts, src/views/corrida.ejs,
+src/controler/resultadoControler.ts
+showPage carrega todos os usuarios, e corrida.ejs monta as opcoes a partir dessa
+lista. A tela pode oferecer pilotos que nao foram associados a corrida na criacao.
+O createManyShow valida corrida e campeonato, mas nao confirma que cada piloto
+enviado pertence a corrida. Validar isso no servidor e limitar as opcoes da tela
+aos pilotos inscritos.
+
+3. Validar completude e duplicidade dos resultados na criacao
+Arquivo: src/controler/resultadoControler.ts
+createManyShow nao exige exatamente dez pilotos/posicoes nem valida duplicidade de
+userId e posicao antes de gravar. Ha restricoes no banco, mas uma violacao pode
+virar erro interno em vez de uma resposta de validacao clara. Validar os dados no
+servidor, sem depender apenas dos selects da pagina.
+
+4. Carregar e devolver os dados completos do perfil
+Arquivos: src/controler/userControler.ts, src/views/perfil.ejs
+showPerfil seleciona name e email, mas a tela tambem usa phone e depende de id para
+montar data-api-url. O id e recuperado pela sessao, mas o telefone nao e enviado e
+aparece vazio. Incluir phone na consulta e passar id explicitamente no objeto de
+perfil para a tela.
+
+5. Corrigir a resposta do update do perfil
+Arquivos: src/controler/userControler.ts, src/public/js/updatedUser.js
+O fetch pede Accept: application/json, mas o handler update responde com render de
+EJS. O script atual apenas verifica response.ok e redireciona, entao pode funcionar
+no fluxo atual, mas a resposta nao cumpre o contrato anunciado pelo fetch. Escolher
+JSON para a rota de API ou enviar o formulario como navegacao tradicional. Tambem
+validar a senha e os campos no servidor: a confirmacao feita no navegador nao
+substitui validacao no backend.
+
+6. Restringir remanejamento de posicoes a resultados existentes
+Arquivo: src/controler/resultadoControler.ts
+updateMany valida que os corridaId enviados correspondem a corrida e que IDs e
+posicoes nao se repetem, mas nao confirma que o conjunto de resultados recebido e
+exatamente o conjunto atualmente cadastrado para aquela corrida. Como a rotina move
+temporariamente posicoes e depois as atualiza, dados parciais ou adulterados podem
+causar conflitos ou atualizacoes inesperadas. Comparar o conjunto recebido com os
+resultados da corrida dentro de uma transacao.
+
+7. Corrigir os textos com codificacao quebrada
+Arquivos: varios em src/views e src/public/js
+Ha textos salvos como "InformaÃ§Ãµes", "PosiÃ§Ã£o" e "Senhas invÃ¡lidas". Isso aparece
+em diversas telas e scripts e corresponde aos caracteres corrompidos vistos no
+navegador. Regravar os arquivos como UTF-8 sem dupla conversao e conferir os acentos.
+
+8. Validar o campo pilotos ao criar corrida
+Arquivos: src/views/corrida-nova.ejs, src/schemas/corridaSchema.ts
+Foi adicionada validacao no formulario para exigir ao menos um checkbox marcado
+quando existem pilotos cadastrados. Ainda falta explicitar a quantidade minima no
+schema; quando nao ha pilotos cadastrados, o campo continua ausente e a validacao
+do servidor rejeita a requisicao sem uma mensagem especifica.
+
+OUTROS PONTOS A ACOMPANHAR
+
+- src/controler/campeonatoControler.ts importa da, id e number sem uso; tambem ha
+  imports sem uso em outros controllers. Remover sobras para facilitar manutencao.
+- showPerfil calcula validUser, mas nao usa o resultado.
+- O controller de criacao de corrida captura erros e os troca por um HttpError 400
+  generico, escondendo a causa original; encaminhar o erro ao middleware central.
+- O middleware HTTP retorna detalhes de erros inesperados como texto JSON. Em
+  producao, registrar o detalhe no servidor e enviar uma mensagem generica ao cliente.
+- Existem handlers separados para JSON e paginas, mas algumas rotas sob /api chamam
+  handlers que fazem render/redirect. Padronizar o contrato por endpoint reduz
+  ambiguidade para os scripts fetch e para clientes da API.
+- Ao excluir piloto, corrida ou campeonato, verificar as relacoes e regras de
+  cascade. O schema permite cascata de corrida para resultados, mas resultados de
+  usuario e campeonatos ligados ao usuario podem impedir a exclusao desse usuario.
+- Adicionar testes para autenticacao, autorizacao, criacao de resultados, ranking,
+  atualizacao de perfil e exclusao com relacionamentos.
+- Nao encontrei tsconfig, README ou .env.example no inventario do projeto. Documentar
+  comandos de desenvolvimento/producao e variaveis necessarias (sem incluir segredos).
+
+ORDEM SUGERIDA
+1) Corrigir build/start e codificacao dos arquivos.
+2) Completar validacoes no backend para criacao e atualizacao de resultados.
+3) Corrigir os dados/contratos do perfil e documentar/testar os fluxos.
+
+Observacao: esta lista e uma revisao estatica do estado encontrado no workspace,
+nao uma garantia de que todos os fluxos foram executados contra o banco de dados.

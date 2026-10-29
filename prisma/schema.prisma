@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id    Int    @id @default(autoincrement())
+  name  String @db.VarChar(255)
+  email String @unique @db.VarChar(255)
+  phone String @db.VarChar(255)
+  senha String @db.VarChar(255)
+  role String @db.VarChar(255) @default("user")
+
+  campeonato        Campeonato[]
+  corridas          Corridas[]         @relation("corridasRelation")
+  resultadoCorridas ResultadoCorrida[]
+}
+
+model Campeonato {
+  id   Int    @id @default(autoincrement())
+  name String @db.VarChar(255)
+
+  userId      Int
+  CorridaList Corridas[]
+
+  userCamp User @relation(fields: [userId], references: [id])
+}
+
+model Corridas {
+  id           Int    @id @default(autoincrement())
+  name         String @db.VarChar(255)
+  campeonatoId Int
+
+  campeonato        Campeonato         @relation(fields: [campeonatoId], references: [id], onDelete: Cascade)
+  userId            User[]             @relation("corridasRelation")
+  resultadoCorridas ResultadoCorrida[]
+}
+
+model ResultadoCorrida {
+  corridaId Int
+  userId    Int
+
+  posicao Int
+  pontos  Int @default(0)
+
+  user    User     @relation(fields: [userId], references: [id])
+  corrida Corridas @relation(fields: [corridaId], references: [id], onDelete: Cascade)
+
+  @@id([corridaId, userId])
+  @@unique([corridaId, posicao])
+}

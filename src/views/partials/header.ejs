@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101411">
+  <title><%= title %> | Pseudo Kartistas</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark site-nav">
+  <div class="container">
+    <a class="navbar-brand brand" href="/">PSEUDO<span>KARTISTAS</span></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Abrir menu"><span class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <div class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+        <a class="nav-link <%= title === 'Início' ? 'active' : '' %>" href="/" <%= title === 'Início' ? 'aria-current="page"' : '' %>>Início</a>
+        <a class="nav-link <%= title === 'Campeonatos' ? 'active' : '' %>" href="/campeonatos" <%= title === 'Campeonatos' ? 'aria-current="page"' : '' %>>Campeonatos</a>
+        <a class="nav-link <%= title === 'Corridas' ? 'active' : '' %>" href="/corridas" <%= title === 'Corridas' ? 'aria-current="page"' : '' %>>Corridas</a>
+        <a class="nav-link <%= title === 'Usuários' || title === 'Criar usuário' || title === 'Editar usuário' || title === 'Usuário' ? 'active' : '' %>" href="/usuarios" <%= title === 'Usuários' || title === 'Criar usuário' || title === 'Editar usuário' || title === 'Usuário' ? 'aria-current="page"' : '' %>>Pilotos</a>
+        <a class="nav-link <%= title === 'Classificação' ? 'active' : '' %>" href="/classificacao" <%= title === 'Classificação' ? 'aria-current="page"' : '' %>>Classificação</a>
+        <% const navUser = typeof currentUser !== 'undefined' && currentUser ? currentUser : (typeof user !== 'undefined' ? user : null) %>
+        <% if (navUser) { %>
+          <div class="nav-user-menu">
+            <a class="nav-link text-muted-green" href="/perfil" aria-label="Abrir meu perfil">Olá, <%= navUser.nome || navUser.name || navUser.email %></a>
+            <form class="nav-user-logout" method="post" action="/logout">
+              <button class="btn btn-outline-light btn-sm" type="submit">Sair</button>
+            </form>
+          </div>
+        <% } else { %>
+          <a class="btn btn-outline-light btn-sm nav-login" href="/login">Entrar</a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</nav>
+<main>

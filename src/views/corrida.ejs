@@ -1,0 +1,128 @@
+﻿<% const corrida = data.corrida %>
+<% const pilotosDisponiveis = data.users %>
+<% const resultados = [...(corrida.resultadoCorridas || [])].sort((a, b) => a.posicao - b.posicao) %>
+<% const posicoesDisponiveis = Array.from({ length: 10 }, (_, index) => index + 1).filter((posicao) => !resultados.some((resultado) => resultado.posicao === posicao)) %>
+<% const pilotosSemResultado = pilotosDisponiveis.filter((piloto) => !resultados.some((resultado) => resultado.user?.id === piloto.id)) %>
+<%- include('partials/header', { title: corrida.name }) %>
+<section class="page-banner">
+  <div class="container">
+    <span class="eyebrow text-muted-green"><%= corrida.campeonato.name %></span>
+    <h1><%= corrida.name %></h1>
+    <p>Informe os dez pilotos e a ordem de chegada.</p>
+  </div>
+</section>
+
+<section class="container section-block content-grid">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow text-muted-green">RESULTADO DA CORRIDA</span>
+      <h2>Posições de chegada</h2>
+    </div>
+    <span class="championship-total">10 pilotos</span>
+  </div>
+
+  <% if (resultados.length > 0) { %>
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr><th scope="col">Posi&#231;&#227;o</th><th scope="col">Piloto</th><th scope="col">Pontos</th></tr>
+        </thead>
+        <tbody>
+          <% resultados.forEach((resultado) => { %>
+            <tr>
+              <td><%= resultado.posicao %>&#186;</td>
+              <td><%= resultado.user.name %></td>
+              <td><%= resultado.pontos %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <form
+      id="form-editar-posicoes-corrida"
+      class="result-form mt-4"
+      data-api-url="/api/resultadoCorrida/<%= corrida.campeonatoId %>/<%= corrida.id %>/updateMany"
+      data-api-method="PUT"
+      data-success-url="/corridas/<%= corrida.id %>">
+      <div class="section-heading">
+        <div><span class="eyebrow text-muted-green">AJUSTE DE RESULTADOS</span><h2>Editar posições</h2></div>
+      </div>
+      <div class="result-list js-sortable-results">
+        <% resultados.forEach((resultado) => { %>
+          <div class="result-row js-result-edit-row" draggable="true" data-corrida-id="<%= corrida.id %>" data-user-id="<%= resultado.user.id %>">
+            <span class="drag-handle" aria-hidden="true" title="Arraste para reordenar">⠿</span>
+            <span class="result-position"><%= resultado.user.name %></span>
+            <label class="visually-hidden" for="posicao-<%= resultado.user.id %>">Posição de <%= resultado.user.name %></label>
+            <select class="form-select js-result-position" id="posicao-<%= resultado.user.id %>" required>
+              <% for (let posicao = 1; posicao <= 10; posicao++) { %>
+                <option value="<%= posicao %>" <%= resultado.posicao === posicao ? 'selected' : '' %>><%= posicao %>º lugar</option>
+              <% } %>
+            </select>
+            <span class="points-hint"><%= resultado.pontos %> pts</span>
+          </div>
+        <% }) %>
+      </div>
+      <div class="result-form-footer">
+        <p>Selecione uma posição diferente para cada piloto. Os pontos serão recalculados ao salvar.</p>
+        <button type="submit" class="btn btn-lime" data-save-results>Salvar posições</button>
+      </div>
+    </form>
+  <% } %>
+
+  <% if (posicoesDisponiveis.length > 0 && pilotosSemResultado.length < posicoesDisponiveis.length) { %>
+    <div class="alert alert-warning" role="alert">
+      Há <%= pilotosSemResultado.length %> pilotos disponíveis para <%= posicoesDisponiveis.length %> posições restantes.
+    </div>
+  <% } else if (posicoesDisponiveis.length > 0) { %>
+    <form method="post" action="/campeonato/<%= corrida.campeonatoId %>/corrida/<%= corrida.id %>/resultados" class="result-form">
+      <div class="result-list">
+        <% posicoesDisponiveis.forEach((posicao, index) => { %>
+          <div class="result-row">
+            <label class="result-position" for="piloto-<%= posicao %>"><%= String(posicao).padStart(2, '0') %></label>
+            <input type="hidden" name="resultados[<%= index %>][corridaId]" value="<%= corrida.id %>">
+            <input type="hidden" name="resultados[<%= index %>][posicao]" value="<%= posicao %>">
+            <select class="form-select js-piloto-select" id="piloto-<%= posicao %>" name="resultados[<%= index %>][userId]" required>
+              <option value="" selected disabled>Selecione o piloto da posição <%= posicao %></option>
+              <% pilotosSemResultado.forEach((piloto) => { %>
+                <option value="<%= piloto.id %>"><%= piloto.name %></option>
+              <% }) %>
+            </select>
+            <span class="points-hint"><%= posicao <= 5 ? [10, 8, 5, 3, 1][posicao - 1] : 0 %> pts</span>
+          </div>
+        <% }) %>
+      </div>
+      <div class="result-form-footer">
+        <p>Selecione pilotos diferentes para as posições restantes. A pontuação é calculada pela posição.</p>
+        <button type="submit" class="btn btn-lime">Salvar posições restantes</button>
+      </div>
+    </form>
+  <% } else if (resultados.length > 0) { %>
+    <div class="alert alert-success" role="status">Todas as dez posições já têm resultado.</div>
+  <% } %>
+
+  <a class="back-link" href="/corridas">← Voltar para corridas</a>
+</section>
+<script>
+  (() => {
+    const selects = Array.from(document.querySelectorAll('.js-piloto-select'));
+
+    function atualizarPilotosDisponiveis() {
+      selects.forEach((selectAtual) => {
+        const selecionadosEmOutrasPosicoes = new Set(
+          selects
+            .filter((select) => select !== selectAtual && select.value)
+            .map((select) => select.value)
+        );
+
+        Array.from(selectAtual.options).forEach((option) => {
+          option.disabled = option.value !== '' && selecionadosEmOutrasPosicoes.has(option.value);
+        });
+      });
+    }
+
+    selects.forEach((select) => select.addEventListener('change', atualizarPilotosDisponiveis));
+    atualizarPilotosDisponiveis();
+  })();
+</script>
+<script src="/js/reorderResultados.js" defer></script>
+<%- include('partials/footer') %>

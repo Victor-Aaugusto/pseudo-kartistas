@@ -1,0 +1,90 @@
+<% const campeonatos = data.campeonatos %>
+<% const pilotos = data.users %>
+<%- include('partials/header', { title: 'Nova corrida' }) %>
+<section class="page-banner">
+  <div class="container">
+    <span class="eyebrow text-muted-green">CALENDÁRIO</span>
+    <h1>Nova corrida</h1>
+    <p>Cadastre uma etapa e associe-a a um campeonato.</p>
+  </div>
+</section>
+
+<section class="container section-block">
+  <div class="login-card">
+    <div class="section-heading">
+      <div>
+        <span class="eyebrow text-muted-green">DADOS DA ETAPA</span>
+        <h2>Informações da corrida</h2>
+      </div>
+    </div>
+
+    <form class="row g-3" method="post" action="/corridas" id="form-nova-corrida">
+      <div class="col-12">
+        <label class="form-label" for="name">Nome da corrida</label>
+        <input class="form-control" type="text" id="name" name="name" maxlength="255" placeholder="Ex.: Grande Prêmio de São Paulo" required>
+      </div>
+      <div class="col-12">
+        <label class="form-label" for="campeonatoId">Campeonato</label>
+        <select class="form-select" id="campeonatoId" name="campeonatoId" required>
+          <option value="" selected disabled>Selecione um campeonato</option>
+          <% campeonatos.forEach((campeonato) => { %>
+            <option value="<%= campeonato.id %>"><%= campeonato.name %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="col-12">
+        <fieldset>
+          <legend class="form-label">Pilotos inscritos</legend>
+          <p class="form-text">Selecione pelo menos um piloto que poderá receber resultados nesta corrida.</p>
+          <% if (pilotos.length === 0) { %>
+            <div class="alert alert-warning" role="alert">Não há pilotos cadastrados.</div>
+          <% } else { %>
+            <div class="row g-2 pilot-checkbox-grid">
+              <% pilotos.forEach((piloto) => { %>
+                <div class="col-sm-6 col-lg-4">
+                  <label class="pilot-checkbox-card">
+                    <input class="form-check-input" type="checkbox" name="pilotos[]" value="<%= piloto.id %>">
+                    <span class="pilot-checkbox-name"><%= piloto.name %></span>
+                  </label>
+                </div>
+              <% }) %>
+            </div>
+          <% } %>
+        </fieldset>
+      </div>
+      <div class="col-12 d-flex flex-wrap gap-2 mt-4">
+        <button class="btn btn-lime" type="submit">Salvar corrida</button>
+        <a class="btn btn-outline-light" href="/corridas">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</section>
+<script>
+  (() => {
+    const campeonatoId = new URLSearchParams(window.location.search).get('campeonatoId');
+    const campoCampeonato = document.getElementById('campeonatoId');
+
+    if (campeonatoId && campoCampeonato) {
+      campoCampeonato.value = campeonatoId;
+    }
+  })();
+</script>
+<script>
+  (() => {
+    const form = document.getElementById('form-nova-corrida');
+    const pilotos = Array.from(form?.querySelectorAll('input[name="pilotos[]"]') || []);
+    if (!form || pilotos.length === 0) return;
+
+    const validarPilotos = () => {
+      const selecionado = pilotos.some((piloto) => piloto.checked);
+      pilotos[0].setCustomValidity(selecionado ? '' : 'Selecione pelo menos um piloto.');
+    };
+
+    pilotos.forEach((piloto) => piloto.addEventListener('change', validarPilotos));
+    form.addEventListener('submit', (event) => {
+      validarPilotos();
+      if (!form.reportValidity()) event.preventDefault();
+    });
+  })();
+</script>
+<%- include('partials/footer') %>
