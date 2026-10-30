@@ -87,8 +87,7 @@ export class ControlerUser {
         try {
             const users = await prisma.user.findMany({
                 select: {
-                    name: true,
-                    email: true
+                    name: true
                 }
             })  
 
@@ -191,29 +190,15 @@ export class ControlerUser {
                     id: Number(req.params.id),
                 },
                 select: {
-                    name: true,
-                    email: true,
+                    name: true
                 }
             })
 
             if(!user) throw new HttpError(404,'usuario não localizado')
 
-            const payload = {name: user.name, email: user.email}
+            const payload = {name: user.name}
 
             res.status(200).json({data: payload})
-        } catch (error) {
-            next(error)
-        }
-    }
-
-    showPage: Handler = async (req, res, next) => {
-        try {
-            const user = await prisma.user.findUnique({
-                where: { id: Number(req.params.id) },
-                select: { id: true, name: true, email: true, phone: true, role: true }
-            })
-            if (!user) throw new HttpError(404, 'Usuário não localizado')
-            res.status(200).render('usuario', { user })
         } catch (error) {
             next(error)
         }

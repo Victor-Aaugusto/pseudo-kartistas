@@ -4,9 +4,6 @@ import { createResultManySchema, createResultSchema, updatedResultManySchema, up
 import { HttpError } from "../error/httpError";
 import { calculaPontos } from "../service/pontuacao";
 import { campExiste, corridaDuplicate, corridaExist } from "../service/validade";
-import { id } from "zod/locales";
-import { number } from "zod";
-
 
 export class ControlerResultado {
     index: Handler = async(req, res, next) => {
@@ -21,6 +18,54 @@ export class ControlerResultado {
     create: Handler = async(req, res, next) => {
         try {
             const data = createResultSchema.parse(req.body)
+
+            const dataCorrida = await prisma.corridas.findUnique({
+               select:{
+                    userId:{
+                        select:{
+                            name: true,
+                            id: true
+                        }
+                    }, campeonato:{
+                        select:{
+                            id: true,
+                            name: true
+                        }
+                    }, resultadoCorridas:{
+                        select:{
+                            posicao: true,
+                            userId: true
+                        }
+                    }
+                }, where:{
+                    id: data.corridaId
+                }
+            })
+
+            if(!dataCorrida) throw new HttpError(404, 'Corrida não localizada')
+
+            const campeonatoId = dataCorrida.campeonato.id
+
+            if(!campeonatoId) throw new HttpError(404, 'Nâo identificado ID do campeonato')
+
+            const existisCamp = await prisma.campeonato.findUnique({
+                where: {
+                   id: campeonatoId
+                }
+            })
+
+            if(!existisCamp) throw new HttpError(404, 'Campeonato não localizado!')
+
+            const pilotoAssociado = dataCorrida
+
+            if(!pilotoAssociado?.userId.some(user => user.id === data.userId)) throw new HttpError(400, 'Piloto não assosiado enviado')
+
+            const posicaoOcupada = dataCorrida.resultadoCorridas.some(race => race.posicao === data.posicao)
+
+            if(posicaoOcupada) throw new HttpError(409, 'Posição já ocupada')
+            
+            if(pilotoAssociado.resultadoCorridas.some(user => user.userId === data.userId)) throw new HttpError(409, 'Já possui resultado cadastrado')
+
             const points = calculaPontos(data.posicao)
 
             const newResult = await prisma.resultadoCorrida.create({
@@ -105,7 +150,7 @@ export class ControlerResultado {
     createManyShow: Handler = async (req, res, next) =>{
         const data = createResultManySchema.parse(req.body.resultados)
 
-        if(!data) throw new HttpError(404, 'Resultados não encontrados')
+        if(data.length === 0) throw new HttpError(404, 'Resultados não encontrados')
 
         const existisCorrida = await prisma.corridas.findFirst({
             where: {
@@ -118,16 +163,16 @@ export class ControlerResultado {
                 }
             }
         })
-        
-        data.every(user => {
-            if(user.corridaId !== Number(req.params.corridaId)){
-                throw new HttpError(400, 'Dados inconsistentes!')
-            } else {
-                return true
-            }
-        })
 
         if(!existisCorrida) throw new HttpError(404, 'Corrida não encontrada')
+        
+        const corridaInvertida = data.some(
+            user => user.corridaId !== Number(req.params.corridaId)
+        )
+
+        if(corridaInvertida){
+            throw new HttpError(400, 'Dados inconsistentes')
+        }
 
         const existisCamp = await prisma.campeonato.findFirst({
             where: {
@@ -137,11 +182,25 @@ export class ControlerResultado {
 
         const existisCampECorddia = existisCorrida?.campeonatoId === existisCamp?.id
 
-        if(existisCampECorddia) throw new HttpError(404, 'Campeonato não encontrado')
+        if(!existisCampECorddia) throw new HttpError(404, 'Campeonato não encontrado')
 
         const pilotosAssociados = data.some(user => !existisCorrida.userId.some(piloto => piloto.id === user.userId))
 
-        if(!pilotosAssociados) throw new HttpError(404, 'Piloto não associado enviado!')
+        if(pilotosAssociados) throw new HttpError(404, 'Piloto não associado enviado!')
+
+         const idsList = data.map(id => {
+            return id.userId
+        })
+
+        const posicaoList = data.map(posicao => {
+            return posicao.posicao
+        })
+
+        const idRepeat = new Set(idsList).size !== idsList.length
+        const posicaoRepeat = new Set(posicaoList).size !== posicaoList.length
+
+        if(idRepeat) throw new HttpError(400, 'Ids repetidos enviados')
+        if(posicaoRepeat) throw new HttpError(400, 'Posições repetidos enviados')
 
         const resultado = data.map(user =>( {
             ...user,

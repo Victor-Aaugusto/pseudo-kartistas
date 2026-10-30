@@ -145,8 +145,7 @@ export class ControlerCampeonato {
                 CorridaList: true,
                 userCamp: {
                     select: {
-                        name: true,
-                        email: true,
+                        name: true
                     }
                 }
             }
@@ -167,8 +166,7 @@ export class ControlerCampeonato {
                 CorridaList: true,
                 userCamp: {
                     select: {
-                        name: true,
-                        email: true,
+                        name: true
                     }, 
                 }, 
             }
@@ -204,8 +202,7 @@ export class ControlerCampeonato {
                 CorridaList: true,
                 userCamp: {
                     select: {
-                        name: true,
-                        email: true,
+                        name: true
                     }, 
                 }, 
             }

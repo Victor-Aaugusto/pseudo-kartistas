@@ -1,6 +1,7 @@
 <% const origemPilotos = typeof users !== 'undefined' ? users : (typeof data !== 'undefined' ? data : []) %>
 <% const listaPilotos = Array.isArray(origemPilotos) ? origemPilotos : (Array.isArray(origemPilotos?.data) ? origemPilotos.data : []) %>
 <% const pilotosOrdenados = [...listaPilotos].sort((a, b) => (b._count?.corridas || 0) - (a._count?.corridas || 0)) %>
+<% const adminPodeGerenciar = currentUser?.role === 'admin' %>
 <%- include('partials/header', { title: 'Pilotos' }) %>
 
 <section class="page-banner">
@@ -36,8 +37,13 @@
               <div><strong><%= quantidadeSegundos %></strong><span>2º lugar</span></div>
               <div><strong><%= quantidadeTerceiros %></strong><span>3º lugar</span></div>
             </div>
-            <% if (piloto.id != null) { %><a class="race-ranking-link d-inline-block mt-3" href="/usuarios/<%= piloto.id %>/public">Ver perfil do piloto <span aria-hidden="true">↗</span></a><% } %>
             <% if (piloto.phone) { %><p class="mt-1"><%= piloto.phone %></p><% } %>
+            <div class="pilot-card-actions">
+              <% if (piloto.id != null) { %><a class="race-ranking-link" href="/usuarios/<%= piloto.id %>/public">Ver perfil <span aria-hidden="true">↗</span></a><% } %>
+              <% if (adminPodeGerenciar && piloto.id != null) { %>
+                <button class="btn btn-outline-danger btn-sm" type="button" data-delete-url="/api/users/<%= piloto.id %>" data-pilot-name="<%= piloto.name || 'Piloto' %>" aria-label="Excluir piloto <%= piloto.name || 'Piloto' %>">Excluir</button>
+              <% } %>
+            </div>
           </article>
         </div>
       <% }) %>

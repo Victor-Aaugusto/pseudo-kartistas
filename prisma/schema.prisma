@@ -32,7 +32,7 @@ model Campeonato {
   userId      Int
   CorridaList Corridas[]
 
-  userCamp User @relation(fields: [userId], references: [id])
+  userCamp User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Corridas {
@@ -52,7 +52,7 @@ model ResultadoCorrida {
   posicao Int
   pontos  Int @default(0)
 
-  user    User     @relation(fields: [userId], references: [id])
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   corrida Corridas @relation(fields: [corridaId], references: [id], onDelete: Cascade)
 
   @@id([corridaId, userId])

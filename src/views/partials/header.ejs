@@ -23,7 +23,7 @@
         <a class="nav-link <%= title === 'Corridas' ? 'active' : '' %>" href="/corridas" <%= title === 'Corridas' ? 'aria-current="page"' : '' %>>Corridas</a>
         <a class="nav-link <%= title === 'Usuários' || title === 'Criar usuário' || title === 'Editar usuário' || title === 'Usuário' ? 'active' : '' %>" href="/usuarios" <%= title === 'Usuários' || title === 'Criar usuário' || title === 'Editar usuário' || title === 'Usuário' ? 'aria-current="page"' : '' %>>Pilotos</a>
         <a class="nav-link <%= title === 'Classificação' ? 'active' : '' %>" href="/classificacao" <%= title === 'Classificação' ? 'aria-current="page"' : '' %>>Classificação</a>
-        <% const navUser = typeof currentUser !== 'undefined' && currentUser ? currentUser : (typeof user !== 'undefined' ? user : null) %>
+        <% const navUser = typeof currentUser !== 'undefined' ? currentUser : null %>
         <% if (navUser) { %>
           <div class="nav-user-menu">
             <a class="nav-link text-muted-green" href="/perfil" aria-label="Abrir meu perfil">Olá, <%= navUser.nome || navUser.name || navUser.email %></a>
